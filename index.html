@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liquid Glass Vape Shop</title>
+    <script src="https://telegram.org"></script>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121214;
+            --surface-glass: rgba(30, 30, 35, 0.65);
+            --surface-glass-active: rgba(45, 45, 50, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.06);
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
+            --accent-color: #ffffff;
+            --accent-dim: rgba(255, 255, 255, 0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; padding-bottom: 90px; }
+        .glass-panel { background: var(--surface-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-glass); border-radius: 20px; }
+        header { position: sticky; top: 0; z-index: 100; padding: 16px; background: rgba(18, 18, 20, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-glass); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .categories-container { display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px; scrollbar-width: none; }
+        .categories-container::-webkit-scrollbar { display: none; }
+        .category-pill { padding: 8px 16px; border-radius: 30px; background: var(--surface-glass); border: 1px solid var(--border-glass); color: var(--text-muted); font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: all 0.2s ease; }
+        .category-pill.active { background: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color); }
+        .catalog-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 16px 24px 16px; }
+        .product-card { padding: 14px; display: flex; flex-direction: column; justify-content: space-between; height: 180px; }
+        .product-name { font-size: 15px; font-weight: 600; line-height: 1.3; margin-bottom: 8px; }
+        .product-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .product-price { font-size: 16px; font-weight: 700; }
+        .add-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-color); color: var(--bg-color); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 76px; display: flex; justify-content: space-around; align-items: center; padding-bottom: 12px; z-index: 200; border-radius: 24px 24px 0 0; border-top: 1px solid var(--border-glass); }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; position: relative; }
+        .tab-item.active { color: var(--text-main); }
+        .tab-item .material-icons-round { font-size: 24px; margin-bottom: 4px; }
+        .badge { position: absolute; top: -4px; right: 4px; background: #ff453a; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 700; }
+        .app-screen { display: none; padding: 16px; }
+        .app-screen.active { display: block; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; margin-bottom: 10px; }
+        .cart-controls { display: flex; align-items: center; gap: 12px; }
+        .cart-qty-btn { width: 28px; height: 28px; border-radius: 8px; background: var(--accent-dim); border: 1px solid var(--border-glass); color: var(--text-main); display: flex; align-items: center; justify-content: center; }
+        .form-group { margin-top: 16px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; padding-left: 4px; }
+        .input-field { width: 100%; padding: 14px; background: var(--surface-glass); border: 1px solid var(--border-glass); border-radius: 12px; color: var(--text-main); font-size: 15px; outline: none; }
+        .input-field:focus { border-color: rgba(255,255,255,0.3); }
+        .checkout-btn { width: 100%; padding: 16px; background: var(--accent-color); color: var(--bg-color); border: none; border-radius: 14px; font-size: 16px; font-weight: 600; margin-top: 20px; cursor: pointer; }
+        .bottom-sheet-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .bottom-sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+        .bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 70vh; background: #1c1c1e; border-radius: 20px 20px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); display: flex; flex-direction: column; }
+        .bottom-sheet.open { transform: translateY(0); }
+        .bottom-sheet-handle { width: 36px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 10px auto; flex-shrink: 0; }
+        .bottom-sheet-content { overflow-y: auto; padding: 0 16px 40px 16px; }
+        .district-item { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 16px; cursor: pointer; }
+        #loader { text-align: center; padding: 40px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>LIQUID GLASS</h1>
+            <span class="material-icons-round" style="opacity: 0.8;">blur_on</span>
+        </div>
+    </header>
+
+    <main id="catalog-screen" class="app-screen active">
+        <div class="categories-container" id="categories-list">
+            <div class="category-pill active" onclick="filterCategory('all')">Все</div>
+        </div>
+        <div id="loader">Загрузка космического ассортимента...</div>
+        <div class="catalog-grid" id="products-container"></div>
+    </main>
+
+    <main id="cart-screen" class="app-screen">
+        <h2 style="margin-bottom: 20px; font-weight: 600;">Ваш выбор</h2>
+        <div id="cart-items-container"></div>
+        <div id="cart-form-block" style="display: none; margin-top: 24px;">
+            <div class="form-group">
+                <label>Микрорайон доставки (Сморгонь)</label>
+                <div class="input-field" id="district-selector" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                    <span id="selected-district-text">Выбрать район...</span>
+                    <span class="material-icons-round" style="font-size:20px; color:var(--text-muted);">expand_more</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Точный адрес и телефон</label>
+                <input type="text" id="user-address" class="input-field" placeholder="Улица, дом, кв, +375...">
+            </div>
+            <div style="margin-top: 24px; display:flex; justify-content:space-between; font-weight:700; font-size:18px;">
+                <span>Итого:</span>
+                <span id="cart-total-price">0 Br</span>
+            </div>
+            <button class="checkout-btn" onclick="sendOrder()">Оформить заказ в Telegram</button>
+        </div>
+    </main>
+
+    <main id="profile-screen" class="app-screen">
+        <div class="glass-panel" style="padding: 20px; text-align: center; margin-bottom: 20px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--accent-dim); margin: 0 auto 12px auto; display:flex; align-items:center; justify-content:center;">
+                <span class="material-icons-round" style="font-size: 36px;">account_circle</span>
+            </div>
+            <h3 id="profile-name">Гость Ликвида</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Статус: Client</p>
+        </div>
+        <div class="glass-panel" style="padding: 16px;">
+            <div style="display:flex; justify-content:space-between; padding: 12px 0; border-bottom: 1px solid var(--border-glass);">
+                <span style="color:var(--text-muted)">Валюта приложения</span>
+                <strong>Белорусский рубль (Br)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding: 12px 0;">
+                <span style="color:var(--text-muted)">Локация бэкенда</span>
+                <strong>Сморгонь (Google Sheets)</strong>
+            </div>
+        </div>
+    </main>
+
+    <nav class="tab-bar glass-panel">
+        <div id="tab-btn-catalog" class="tab-item active" onclick="switchTab('catalog')">
+            <span class="material-icons-round">apps</span>Каталог
+        </div>
+        <div id="tab-btn-cart" class="tab-item" onclick="switchTab('cart')">
+            <span class="material-icons-round">shopping_bag</span>Корзина
+            <span class="badge" id="cart-badge" style="display: none;">0</span>
+        </div>
+        <div id="tab-btn-profile" class="tab-item" onclick="switchTab('profile')">
+            <span class="material-icons-round">person</span>Профиль
+        </div>
+    </nav>
+
+    <div class="bottom-sheet-backdrop" id="sheet-backdrop" onclick="closeDistrictSheet()"></div>
+    <div class="bottom-sheet" id="district-sheet">
+        <div class="bottom-sheet-handle"></div>
+        <div style="padding: 10px 16px; font-weight:700; font-size:18px;">Районы Сморгони</div>
+        <div class="bottom-sheet-content" id="districts-list-container"></div>
+    </div>
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            if (tg.initDataUnsafe?.user?.first_name) {
+                document.getElementById('profile-name').innerText = tg.initDataUnsafe.user.first_name;
+            }
+        }
+        const SHEET_ID = '1XGPNRIox_1zfFrrk-Cdkh1IJo2Z27oQIzVe28Gx-dZM';
+        const SHEET_URL = `https://google.com{SHEET_ID}/gviz/tq?tqx=out:json`;
+        const districts = ["Центр", "Досы", "Восточный"];
+        let productsData = []; let cart = {}; let currentCategory = 'all';
+        const dContainer = document.getElementById('districts-list-container');
+        districts.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'district-item'; div.innerText = d;
+            div.onclick = () => selectDistrict(d); dContainer.appendChild(div);
+        });
+        document.getElementById('district-selector').onclick = () => {
+            document.getElementById('sheet-backdrop').classList.add('open');
+            document.getElementById('district-sheet').classList.add('open');
+        };
+        function closeDistrictSheet() {
+            document.getElementById('sheet-backdrop').classList.remove('open');
+            document.getElementById('district-sheet').classList.remove('open');
+        }
+        function selectDistrict(name) {
+            document.getElementById('selected-district-text').innerText = name;
+            document.getElementById('selected-district-text').style.color = 'var(--text-main)';
+            closeDistrictSheet();
+        }
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active'));
+            if (tabName === 'catalog') {
+                document.getElementById('tab-btn-catalog').classList.add('active');
+                document.getElementById('catalog-screen').classList.add('active');
+            } else if (tabName === 'cart') {
+                document.getElementById('tab-btn-cart').classList.add('active');
+                document.getElementById('cart-screen').classList.add('active');
+                renderCart();
+            } else if (tabName === 'profile') {
+                document.getElementById('tab-btn-profile').classList.add('active');
+                document.getElementById('profile-screen').classList.add('active');
+            }
+        }
+        async function loadProducts() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const rows = json.table.rows;
+                productsData = rows.map(row => ({
+                    id: row.c && row.c[0] ? String(row.c[0].v || '') : '',
+                    name: row.c && row.c[1] ? String(row.c[1].v || '') : '',
+                    price: row.c && row.c[2] ? parseFloat(row.c[2].v || 0) : 0,
+                    category: row.c && row.c[3] ? String(row.c[3].v || 'Другое') : 'Другое'
+                })).filter(p => p.id && p.name);
+                document.getElementById('loader').style.display = 'none';
+                const categories = ['all', ...new Set(productsData.map(p => p.category))];
+                renderCategories(categories); renderCatalog();
+            } catch (error) {
+                document.getElementById('loader').innerText = 'Ошибка синхронизации с базой.';
+                console.error(error);
+            }
+        }
+        function renderCategories(categories) {
+            const container = document.getElementById('categories-list');
+            container.innerHTML = '';
+            categories.forEach(cat => {
+                const div = document.createElement('div');
+                div.className = `category-pill ${currentCategory === cat ? 'active' : ''}`;
+                div.innerText = cat === 'all' ? 'Все' : cat;
+                div.onclick = () => filterCategory(cat); container.appendChild(div);
+            });
+        }
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-pill').forEach(el => {
+                el.classList.toggle('active', el.innerText === (cat === 'all' ? 'Все' : cat));
+            });
+            renderCatalog();
+        }
+        function renderCatalog() {
+            const container = document.getElementById('products-container'); container.innerHTML = '';
+            const filtered = currentCategory === 'all' ? productsData : productsData.filter(p => p.category === currentCategory);
+            filtered.forEach(p => {
+                const div = document.createElement('div'); div.className = 'product-card glass-panel';
+                div.innerHTML = `<div class="product-name">${p.name}</div><div class="product-footer"><div class="product-price">${p.price.toFixed(2)} Br</div><button class="add-btn" onclick="addToCart('${p.id}')"><span class="material-icons-round" style="font-size:20px;">add</span></button></div>`;
+                container.appendChild(div);
+            });
+        }
+        function addToCart(id) { cart[id] = (cart[id] || 0) + 1; updateCartBadge(); if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); }
+        function updateCartBadge() { const totalItems = Object.values(cart).reduce((a, b) => a + b, 0); const badge = document.getElementById('cart-badge'); if (totalItems > 0) { badge.innerText = totalItems; badge.style.display = 'block'; } else { badge.style.display = 'none'; } }
+        function changeQty(id, delta) { cart[id] = (cart[id] || 0) + delta; if (cart[id] <= 0) delete cart[id]; updateCartBadge(); renderCart(); }
+        function renderCart() {
+            const container = document.getElementById('cart-items-container'); container.innerHTML = ''; let total = 0; let hasItems = false;
+            for (const id in cart) {
+                const product = productsData.find(p => p.id === id); if (!product) continue; hasItems = true; const itemCost = product.price * cart[id]; total += itemCost;
+                const div = document.createElement('div'); div.className = 'cart-item glass-panel';
+                div.innerHTML = `<div><div style="font-weight:600; font-size:15px;">${product.name}</div><div style="color:var(--text-muted); font-size:13px; margin-top:2px;">${product.price.toFixed(2)} Br</div></div><div class="cart-controls"><button class="cart-qty-btn" onclick="changeQty('${id}', -1)">-</button><span style="font-weight:600; min-width:16px; text-align:center;">${cart[id]}</span><button class="cart-qty-btn" onclick="changeQty('${id}', 1)">+</button></div>`;
+                container.appendChild(div);
+            }
+            if (!hasItems) { container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">Корзина пуста. Время залить Liquid Glass!</div>`; document.getElementById('cart-form-block').style.display = 'none'; }
+            else { document.getElementById('cart-form-block').style.display = 'block'; document.getElementById('cart-total-price').innerText = `${total.toFixed(2)} Br`; }
+        }
+        function sendOrder() {
+            const district = document.getElementById('selected-district-text').innerText; const address = document.getElementById('user-address').value.trim();
+            if (district === 'Выбрать район...') { alert('Пожалуйста, выберите район доставки!'); return; }
+            if (!address) { alert('Пожалуйста, укажите точный адрес и телефон!'); return; }
+            let message = `🚀 *Новый заказ Liquid Glass (Сморгонь)*\n\n`; let total = 0;
+            for (const id in cart) { const product = productsData.find(p => p.id === id); if (product) { const cost = product.price * cart[id]; total += cost; message += `• ${product.name} x${cart[id]} — ${cost.toFixed(2)} Br\n`; } }
+            message += `\n📍 *Район:* ${district}\n🏠 *Адрес/Связь:* ${address}\n\n💰 *Итого:* ${total.toFixed(2)} Br`;
+            if (tg) { tg.sendData(message); } else { const encodedText = encodeURIComponent(message); window.open(`https://t.me{encodedText}`, '_blank'); }
+        }
+        loadProducts();
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liquid Glass Store</title>
+    <title>Liquid Store</title>
     <script src="https://telegram.org"></script>
     <link href="https://googleapis.com" rel="stylesheet">
     <link href="https://googleapis.com" rel="stylesheet">
@@ -15,7 +15,7 @@
             --glass-tint: rgba(140, 155, 175, 0.12);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; padding-bottom: 110px; }
+        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; padding-bottom: 120px; }
         
         .liquid-panel { 
             background: rgba(25, 28, 36, 0.45);
@@ -42,11 +42,13 @@
         .product-price { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.85); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         .add-btn { width: 38px; height: 38px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); border-top: 1px solid rgba(255, 255, 255, 0.2); border-left: 1px solid rgba(255, 255, 255, 0.15); border-right: 1px solid rgba(0, 0, 0, 0.2); border-bottom: 1px solid rgba(0, 0, 0, 0.3); color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.15), 2px 3px 6px rgba(0,0,0,0.25); transition: all 0.15s ease; }
         .add-btn:active { box-shadow: inset -1px -1px 2px rgba(255,255,255,0.1), inset 2px 2px 4px rgba(0,0,0,0.4); transform: scale(0.92); }
-        .tab-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 82px; display: flex; justify-content: space-around; align-items: center; padding-bottom: 4px; z-index: 200; border-radius: 32px; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.08), 0 15px 35px rgba(0,0,0,0.6); }
-        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; position: relative; width: 62px; height: 62px; justify-content: center; border-radius: 18px; transition: all 0.2s; }
-        .tab-item.active { color: var(--text-main); background: rgba(0, 0, 0, 0.15); border-bottom: 1px solid rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.02); box-shadow: inset 2px 2px 5px rgba(0,0,0,0.45), inset -1px -1px 2px rgba(255,255,255,0.03); }
-        .tab-item .material-icons-round { font-size: 26px; margin-bottom: 2px; }
-        .badge { position: absolute; top: 6px; right: 6px; background: #ff453a; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 700; box-shadow: 0 2px 6px rgba(255,69,58,0.4); }
+        .tab-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 72px; display: flex; justify-content: space-around; align-items: center; z-index: 200; border-radius: 24px; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.08), 0 15px 35px rgba(0,0,0,0.6); }
+        .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; position: relative; width: 30%; height: 100%; border-radius: 16px; transition: all 0.2s; }
+        .tab-item.active { color: var(--text-main); background: rgba(0, 0, 0, 0.15); box-shadow: inset 2px 2px 5px rgba(0,0,0,0.45); }
+        .tab-item .material-icons-round { font-size: 24px; margin-bottom: 2px; }
+        .tab-item span:not(.material-icons-round):not(.badge) { font-size: 11px; font-weight: 600; letter-spacing: 0.2px; }
+        
+        .badge { position: absolute; top: 12px; right: 22px; background: #ff453a; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 700; box-shadow: 0 2px 6px rgba(255,69,58,0.4); }
         .app-screen { display: none; padding: 16px 4px; }
         .app-screen.active { display: block; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; margin-bottom: 14px; }
@@ -110,9 +112,9 @@
         </div>
     </main>
     <nav class="tab-bar liquid-panel">
-        <div id="tab-btn-catalog" class="tab-item active" onclick="switchTab('catalog')"><span class="material-icons-round">widgets</span><span style="font-size:10px; margin-top:3px; font-weight: 600;">Обзор</span></div>
-        <div id="tab-btn-cart" class="tab-item" onclick="switchTab('cart')"><span class="material-icons-round">local_mall</span><span style="font-size:10px; margin-top:3px; font-weight: 600;">Корзина</span><span class="badge" id="cart-badge" style="display: none;">0</span></div>
-        <div id="tab-btn-profile" class="tab-item" onclick="switchTab('profile')"><span class="material-icons-round">tune</span><span style="font-size:10px; margin-top:3px; font-weight: 600;">Настройки</span></div>
+        <div id="tab-btn-catalog" class="tab-item active" onclick="switchTab('catalog')"><span class="material-icons-round">widgets</span><span>Обзор</span></div>
+        <div id="tab-btn-cart" class="tab-item" onclick="switchTab('cart')"><span class="material-icons-round">local_mall</span><span>Корзина</span><span class="badge" id="cart-badge" style="display: none;">0</span></div>
+        <div id="tab-btn-profile" class="tab-item" onclick="switchTab('profile')"><span class="material-icons-round">tune</span><span>Настройки</span></div>
     </nav>
     <div class="bottom-sheet-backdrop" id="sheet-backdrop" onclick="closeDistrictSheet()"></div>
     <div class="bottom-sheet" id="district-sheet">
@@ -182,13 +184,13 @@
                 }).filter(p => p && p.id && p.name && p.id !== 'id' && p.id !== 'null');
                 document.getElementById('loader').style.display = 'none';
                 if(productsData.length === 0) {
-                    document.getElementById('products-container').innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:30px; font-size:14px; font-weight: 500;">Виджет пуст. Заполните лист Products в таблице!</div>`;
+                    document.getElementById('products-container').innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:30px; font-size:14px; font-weight: 500;">Витрина пуста. Заполните лист Products в таблице!</div>`;
                     return;
                 }
                 const categories = ['all', ...new Set(productsData.map(p => p.category))];
                 renderCategories(categories); renderCatalog();
             } catch (error) {
-                document.getElementById('loader').innerText = 'Ошибка подключения виджетов бэкенда.';
+                document.getElementById('loader').innerText = 'Ошибка подключения виджетов бэкенда. Проверьте доступ к таблице!';
                 console.error(error);
             }
         }
